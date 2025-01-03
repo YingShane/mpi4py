@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  mpi-service:
+    build: .
+    deploy:
+      replicas: 4  # Number of processes you want to run
+    command: ["mpirun", "--hostfile", "/hostfile", "-np", "4", "python", "/app/mpi.py"]
+    networks:
+      - mpi-network
+    environment:
+      - MPI_LOCAL_RANK=0  # Adjust as needed
+
+networks:
+  mpi-network:
+    driver: bridge
