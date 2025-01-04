@@ -1,7 +1,8 @@
-# Use an official Python base image
 FROM python:3.9-slim
 
-# Install MPI dependencies
+WORKDIR /app
+
+# Install system dependencies for building mpi4py
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
@@ -9,24 +10,16 @@ RUN apt-get update && \
     openmpi-bin \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user
-RUN useradd -m mpiuser
+COPY . /app
 
-# Install mpi4py
+# Install Python dependencies
+RUN pip install -r requirements.txt
+
+# Install mpi4py and numpy
 RUN pip install mpi4py numpy
 
-# Copy the MPI Python script into the container
-COPY mpi.py /app/mpi.py
-COPY hostfile /hostfile
+EXPOSE 80
 
-# Set the working directory
-WORKDIR /app
+ENV NAME=World
 
-# Change the ownership of the files to the new user
-RUN chown -R mpiuser:mpiuser /app
-
-# Switch to the non-root user
-USER mpiuser
-
-# Command to run the script
-CMD ["mpirun", "--hostfile", "/hostfile", "-np", "4", "python", "mpi.py"]
+CMD ["python", "app.py"]
